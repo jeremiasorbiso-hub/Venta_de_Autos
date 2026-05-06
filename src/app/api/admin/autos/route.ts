@@ -91,3 +91,44 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    // Verificar autenticación
+    const authHeader = request.headers.get('Authorization')
+    const token = authHeader?.replace('Bearer ', '')
+
+    if (!token) {
+      return NextResponse.json({ error: 'Se requiere autenticación' }, { status: 401 })
+    }
+
+    const userId = await verifyToken(token)
+    if (!userId) {
+      return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
+    }
+
+    const { autoId } = await request.json()
+
+    if (!autoId) {
+      return NextResponse.json({ error: 'ID de auto requerido' }, { status: 400 })
+    }
+
+    // Buscar y eliminar el auto
+    const todoAutos = getAutos()
+    const autoIndex = todoAutos.findIndex(a => a.id === autoId)
+
+    if (autoIndex === -1) {
+      return NextResponse.json({ error: 'Auto no encontrado' }, { status: 404 })
+    }
+
+    const deletedAuto = todoAutos.splice(autoIndex, 1)
+
+    return NextResponse.json({
+      message: 'Auto eliminado correctamente',
+      auto: deletedAuto[0]
+    })
+  } catch (error) {
+    console.error('Error deleting auto:', error)
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+  }
+}

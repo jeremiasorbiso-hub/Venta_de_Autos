@@ -98,6 +98,32 @@ export default function AdminPage() {
     }
   }
 
+  const handleEliminar = async (autoId: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este auto?')) return
+
+    const token = localStorage.getItem('token')
+    if (!token) return
+
+    try {
+      const response = await fetch('/api/admin/autos', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ autoId })
+      })
+
+      if (!response.ok) throw new Error('Error en la solicitud')
+
+      toast.success('Auto eliminado correctamente')
+      setAutos(autos.filter(a => a.id !== autoId))
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error al eliminar auto')
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -233,7 +259,7 @@ export default function AdminPage() {
                   </div>
 
                   {auto.aprobacion === 'pendiente' && (
-                    <div style={{ display: 'flex', gap: isMobile ? '0.5rem' : '0.75rem', flexDirection: isMobile ? 'column' : 'row' }}>
+                    <div style={{ display: 'flex', gap: isMobile ? '0.5rem' : '0.75rem', flexDirection: isMobile ? 'column' : 'row', marginBottom: '0.75rem' }}>
                       <button
                         onClick={() => handleAprobacion(auto.id, 'aprobar')}
                         style={{
@@ -275,6 +301,32 @@ export default function AdminPage() {
                       </button>
                     </div>
                   )}
+
+                  <button
+                    onClick={() => handleEliminar(auto.id)}
+                    style={{
+                      width: '100%',
+                      padding: isMobile ? '0.75rem' : '0.65rem',
+                      background: 'transparent',
+                      color: '#F44336',
+                      border: '0.5px solid #F44336',
+                      cursor: 'pointer',
+                      fontSize: isMobile ? '0.8rem' : '0.75rem',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      transition: 'all 0.2s',
+                      borderRadius: '2px'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(244,67,54,0.1)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent'
+                    }}
+                  >
+                    🗑 Eliminar Publicación
+                  </button>
                 </div>
               ))}
             </div>
