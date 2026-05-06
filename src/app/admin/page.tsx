@@ -24,6 +24,14 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'pendiente' | 'aprobado' | 'rechazado'>('pendiente')
   const [user, setUser] = useState<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     // Verificar autenticación
@@ -103,28 +111,31 @@ export default function AdminPage() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '1.25rem 2.5rem',
+        padding: isMobile ? '1rem 1.5rem' : '1.25rem 2.5rem',
         borderBottom: '0.5px solid rgba(200, 168, 75, 0.2)',
         background: 'rgba(13,13,11,0.95)',
         backdropFilter: 'blur(8px)',
-        zIndex: 100
+        zIndex: 100,
+        flexWrap: 'wrap',
+        gap: '1rem'
       }}>
-        <Link href="/admin" style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', color: '#F5F0E8' }}>
+        <Link href="/admin" style={{ fontSize: isMobile ? '0.95rem' : '1.1rem', fontWeight: 'bold', letterSpacing: '0.12em', textTransform: 'uppercase', textDecoration: 'none', color: '#F5F0E8', whiteSpace: 'nowrap' }}>
           Auto<span style={{ color: '#C8A84B' }}>Gestión</span> Admin
         </Link>
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.9rem', color: '#6B6B5E' }}>👤 {user?.nombre || 'Admin'}</span>
+        <div style={{ display: 'flex', gap: isMobile ? '1rem' : '1.5rem', alignItems: 'center', marginLeft: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <span style={{ fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#6B6B5E', whiteSpace: 'nowrap' }}>👤 {user?.nombre || 'Admin'}</span>
           <button
             onClick={handleLogout}
             style={{
-              padding: '0.5rem 1rem',
+              padding: isMobile ? '0.6rem 1.2rem' : '0.5rem 1rem',
               background: 'transparent',
               border: '0.5px solid #C8A84B',
               color: '#C8A84B',
               cursor: 'pointer',
-              fontSize: '0.8rem',
+              fontSize: isMobile ? '0.75rem' : '0.8rem',
               textTransform: 'uppercase',
-              letterSpacing: '0.1em'
+              letterSpacing: '0.1em',
+              whiteSpace: 'nowrap'
             }}
           >
             Salir
@@ -132,27 +143,28 @@ export default function AdminPage() {
         </div>
       </nav>
 
-      <section style={{ padding: '3rem 2.5rem' }}>
+      <section style={{ padding: isMobile ? '1.5rem 1rem' : '3rem 2.5rem' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#F5F0E8' }}>Panel de Aprobación</h1>
-          <p style={{ color: '#6B6B5E', marginBottom: '2rem' }}>Revisa y aprueba las publicaciones de vehículos</p>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', marginBottom: '0.5rem', color: '#F5F0E8' }}>Panel de Aprobación</h1>
+          <p style={{ color: '#6B6B5E', marginBottom: '1.5rem', fontSize: isMobile ? '0.9rem' : '1rem' }}>Revisa y aprueba las publicaciones de vehículos</p>
 
           {/* Filtros */}
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: isMobile ? '0.5rem' : '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
             {(['pendiente', 'aprobado', 'rechazado'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 style={{
-                  padding: '0.75rem 1.5rem',
+                  padding: isMobile ? '0.6rem 1rem' : '0.75rem 1.5rem',
                   background: filter === f ? '#C8A84B' : 'transparent',
                   color: filter === f ? '#0D0D0B' : '#C8A84B',
                   border: `0.5px solid #C8A84B`,
                   cursor: 'pointer',
-                  fontSize: '0.85rem',
+                  fontSize: isMobile ? '0.75rem' : '0.85rem',
                   textTransform: 'capitalize',
                   fontWeight: filter === f ? '600' : '400',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {f === 'pendiente' ? `Pendientes (${autos.length})` : f === 'aprobado' ? 'Aprobados' : 'Rechazados'}
@@ -170,8 +182,8 @@ export default function AdminPage() {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-              gap: '1.5rem'
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(350px, 1fr))',
+              gap: isMobile ? '1rem' : '1.5rem'
             }}>
               {autos.map(auto => (
                 <div
@@ -179,28 +191,29 @@ export default function AdminPage() {
                   style={{
                     background: '#1A1A16',
                     border: `0.5px solid ${auto.aprobacion === 'pendiente' ? 'rgba(200,168,75,0.5)' : auto.aprobacion === 'aprobado' ? 'rgba(76,175,80,0.5)' : 'rgba(244,67,54,0.5)'}`,
-                    padding: '1.5rem',
+                    padding: isMobile ? '1.25rem' : '1.5rem',
                     borderRadius: '4px'
                   }}
                 >
                   <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                      <div>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#F5F0E8', margin: '0 0 0.25rem 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', gap: '0.5rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', fontWeight: '700', color: '#F5F0E8', margin: '0 0 0.25rem 0' }}>
                           {auto.marca} {auto.modelo}
                         </h3>
-                        <p style={{ fontSize: '0.85rem', color: '#6B6B5E', margin: 0 }}>
+                        <p style={{ fontSize: isMobile ? '0.8rem' : '0.85rem', color: '#6B6B5E', margin: 0 }}>
                           {auto.anio} · {auto.kilometraje.toLocaleString()} km
                         </p>
                       </div>
                       <span style={{
-                        fontSize: '0.7rem',
+                        fontSize: '0.65rem',
                         padding: '0.3rem 0.6rem',
                         background: auto.aprobacion === 'pendiente' ? 'rgba(200,168,75,0.2)' : auto.aprobacion === 'aprobado' ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.2)',
                         color: auto.aprobacion === 'pendiente' ? '#C8A84B' : auto.aprobacion === 'aprobado' ? '#4CB050' : '#F44336',
                         textTransform: 'uppercase',
                         fontWeight: '600',
-                        letterSpacing: '0.1em'
+                        letterSpacing: '0.1em',
+                        whiteSpace: 'nowrap'
                       }}>
                         {auto.aprobacion}
                       </span>
@@ -208,29 +221,29 @@ export default function AdminPage() {
                   </div>
 
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '0.5px solid rgba(200,168,75,0.1)' }}>
-                    <p style={{ fontSize: '0.9rem', color: '#F5F0E8', margin: '0 0 0.5rem 0' }}>
+                    <p style={{ fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#F5F0E8', margin: '0 0 0.5rem 0' }}>
                       <strong>Precio:</strong> USD ${auto.precio_usd.toLocaleString()}
                     </p>
-                    <p style={{ fontSize: '0.85rem', color: '#6B6B5E', margin: 0 }}>
+                    <p style={{ fontSize: isMobile ? '0.8rem' : '0.85rem', color: '#6B6B5E', margin: 0, lineHeight: '1.4' }}>
                       {auto.descripcion}
                     </p>
-                    <p style={{ fontSize: '0.75rem', color: '#6B6B5E', margin: '0.5rem 0 0 0' }}>
+                    <p style={{ fontSize: isMobile ? '0.75rem' : '0.75rem', color: '#6B6B5E', margin: '0.5rem 0 0 0' }}>
                       Publicado: {new Date(auto.createdAt).toLocaleDateString('es-AR')}
                     </p>
                   </div>
 
                   {auto.aprobacion === 'pendiente' && (
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', gap: isMobile ? '0.5rem' : '0.75rem', flexDirection: isMobile ? 'column' : 'row' }}>
                       <button
                         onClick={() => handleAprobacion(auto.id, 'aprobar')}
                         style={{
                           flex: 1,
-                          padding: '0.75rem',
+                          padding: isMobile ? '0.85rem' : '0.75rem',
                           background: '#4CB050',
                           color: '#fff',
                           border: 'none',
                           cursor: 'pointer',
-                          fontSize: '0.8rem',
+                          fontSize: isMobile ? '0.85rem' : '0.8rem',
                           fontWeight: '600',
                           textTransform: 'uppercase',
                           letterSpacing: '0.08em'
@@ -247,12 +260,12 @@ export default function AdminPage() {
                         }}
                         style={{
                           flex: 1,
-                          padding: '0.75rem',
+                          padding: isMobile ? '0.85rem' : '0.75rem',
                           background: '#F44336',
                           color: '#fff',
                           border: 'none',
                           cursor: 'pointer',
-                          fontSize: '0.8rem',
+                          fontSize: isMobile ? '0.85rem' : '0.8rem',
                           fontWeight: '600',
                           textTransform: 'uppercase',
                           letterSpacing: '0.08em'

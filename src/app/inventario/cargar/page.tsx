@@ -10,6 +10,7 @@ export default function CargarVehiculoPage() {
   const [loading, setLoading] = useState(false)
   const [isAuthed, setIsAuthed] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const [formData, setFormData] = useState({
     marca: '',
     modelo: '',
@@ -22,6 +23,422 @@ export default function CargarVehiculoPage() {
     precio_usd: '',
     descripcion: ''
   })
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const userStr = localStorage.getItem('user')
+
+    if (!token || !userStr) {
+      router.push('/auth')
+      return
+    }
+
+    setIsAuthed(true)
+    setUser(JSON.parse(userStr))
+  }, [router])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        router.push('/auth')
+        return
+      }
+
+      const response = await fetch('/api/autos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast.error(`Error: ${data.error}`)
+        return
+      }
+
+      toast.success('✅ Auto cargado correctamente!\nEsta esperando aprobación del administrador.')
+
+      // Limpiar formulario
+      setFormData({
+        marca: '',
+        modelo: '',
+        version: '',
+        anio: '',
+        kilometraje: '',
+        combustible: 'nafta',
+        transmision: 'automatica',
+        color: '',
+        precio_usd: '',
+        descripcion: ''
+      })
+
+      setTimeout(() => router.push('/inventario'), 2000)
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error al cargar el vehículo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!isAuthed) {
+    return <div style={{ minHeight: '100vh', background: '#0D0D0B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: '#F5F0E8' }}>Redireccionando...</p>
+    </div>
+  }
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#0D0D0B',
+      color: '#F5F0E8',
+      padding: isMobile ? '1.5rem 1rem' : '3rem 2rem',
+      fontFamily: 'Roboto, sans-serif'
+    }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexDirection: isMobile ? 'column' : 'row' }}>
+          <div>
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', marginBottom: '0.5rem', margin: 0 }}>Cargar Vehículo</h1>
+            <p style={{ color: '#6B6B5E', margin: 0, fontSize: isMobile ? '0.9rem' : '1rem' }}>👤 {user?.nombre || 'Usuario'}</p>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token')
+              localStorage.removeItem('user')
+              router.push('/')
+            }}
+            style={{
+              padding: isMobile ? '0.75rem 1.25rem' : '0.5rem 1rem',
+              background: 'transparent',
+              border: '0.5px solid #C8A84B',
+              color: '#C8A84B',
+              cursor: 'pointer',
+              fontSize: isMobile ? '0.8rem' : '0.75rem',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Salir
+          </button>
+        </div>
+
+        <div style={{ background: '#1A1A16', border: '0.5px solid rgba(200,168,75,0.15)', padding: isMobile ? '1rem' : '1.5rem', marginBottom: '2rem', borderRadius: '4px' }}>
+          <p style={{ margin: 0, fontSize: isMobile ? '0.85rem' : '0.9rem', color: '#C8A84B' }}>
+            ⏳ Tu publicación será revisada por el administrador antes de aparecer en el catálogo.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1.25rem' : '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '1rem' : '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Marca *
+              </label>
+              <select
+                name="marca"
+                value={formData.marca}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              >
+                <option value="">Seleccionar</option>
+                <option value="Toyota">Toyota</option>
+                <option value="Volkswagen">Volkswagen</option>
+                <option value="Ford">Ford</option>
+                <option value="Chevrolet">Chevrolet</option>
+                <option value="Renault">Renault</option>
+                <option value="Peugeot">Peugeot</option>
+                <option value="Honda">Honda</option>
+                <option value="Fiat">Fiat</option>
+                <option value="Nissan">Nissan</option>
+                <option value="Jeep">Jeep</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Modelo *
+              </label>
+              <input
+                type="text"
+                name="modelo"
+                value={formData.modelo}
+                onChange={handleChange}
+                placeholder="Corolla, Gol..."
+                required
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+              Versión
+            </label>
+            <input
+              type="text"
+              name="version"
+              value={formData.version}
+              onChange={handleChange}
+              placeholder="2.0 TSI Highline, XEI CVT..."
+              style={{
+                width: '100%',
+                padding: isMobile ? '0.85rem' : '0.75rem',
+                background: '#1A1A16',
+                border: '0.5px solid rgba(245,240,232,0.15)',
+                color: '#F5F0E8',
+                fontFamily: 'Roboto, sans-serif',
+                outline: 'none',
+                fontSize: isMobile ? '1rem' : '0.95rem'
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '1rem' : '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Año *
+              </label>
+              <input
+                type="number"
+                name="anio"
+                value={formData.anio}
+                onChange={handleChange}
+                placeholder="2022"
+                min="1990"
+                max="2030"
+                required
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Kilometraje *
+              </label>
+              <input
+                type="number"
+                name="kilometraje"
+                value={formData.kilometraje}
+                onChange={handleChange}
+                placeholder="42000"
+                min="0"
+                required
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '1rem' : '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Combustible *
+              </label>
+              <select
+                name="combustible"
+                value={formData.combustible}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              >
+                <option value="nafta">Nafta</option>
+                <option value="diesel">Diésel</option>
+                <option value="gnc">GNC</option>
+                <option value="hibrido">Híbrido</option>
+                <option value="electrico">Eléctrico</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Transmisión *
+              </label>
+              <select
+                name="transmision"
+                value={formData.transmision}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              >
+                <option value="manual">Manual</option>
+                <option value="automatica">Automática</option>
+                <option value="cvt">CVT</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '1rem' : '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Color
+              </label>
+              <input
+                type="text"
+                name="color"
+                value={formData.color}
+                onChange={handleChange}
+                placeholder="Blanco, Negro..."
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+                Precio USD *
+              </label>
+              <input
+                type="number"
+                name="precio_usd"
+                value={formData.precio_usd}
+                onChange={handleChange}
+                placeholder="28500"
+                min="0"
+                required
+                style={{
+                  width: '100%',
+                  padding: isMobile ? '0.85rem' : '0.75rem',
+                  background: '#1A1A16',
+                  border: '0.5px solid rgba(245,240,232,0.15)',
+                  color: '#F5F0E8',
+                  fontFamily: 'Roboto, sans-serif',
+                  outline: 'none',
+                  fontSize: isMobile ? '1rem' : '0.95rem'
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6B6B5E' }}>
+              Descripción
+            </label>
+            <textarea
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleChange}
+              placeholder="Información adicional del vehículo..."
+              style={{
+                width: '100%',
+                padding: isMobile ? '0.85rem' : '0.75rem',
+                background: '#1A1A16',
+                border: '0.5px solid rgba(245,240,232,0.15)',
+                color: '#F5F0E8',
+                fontFamily: 'Roboto, sans-serif',
+                outline: 'none',
+                minHeight: isMobile ? '80px' : '100px',
+                resize: 'vertical',
+                fontSize: isMobile ? '1rem' : '0.95rem'
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              padding: isMobile ? '1.2rem' : '1rem',
+              background: loading ? '#999' : '#C8A84B',
+              color: '#0D0D0B',
+              fontWeight: '600',
+              fontSize: isMobile ? '1rem' : '0.9rem',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              marginTop: '1rem'
+            }}
+          >
+            {loading ? 'Cargando...' : 'Cargar vehículo'}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
 
   useEffect(() => {
     const token = localStorage.getItem('token')

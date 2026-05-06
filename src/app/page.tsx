@@ -5,11 +5,20 @@ import Link from 'next/link'
 
 export default function Home() {
   const [scroll, setScroll] = useState(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setScroll(window.scrollY)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   return (
@@ -19,7 +28,7 @@ export default function Home() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '1.25rem 2.5rem',
+        padding: isMobile ? '1rem 1.5rem' : '1.25rem 2.5rem',
         borderBottom: '0.5px solid rgba(200, 168, 75, 0.2)',
         position: 'sticky',
         top: 0,
@@ -27,143 +36,252 @@ export default function Home() {
         backdropFilter: 'blur(8px)',
         zIndex: 100
       }}>
-        <div style={{ fontSize: '1.1rem', fontWeight: 'bold', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: isMobile ? '0.95rem' : '1.1rem', fontWeight: 'bold', letterSpacing: '0.12em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
           Auto<span style={{ color: '#C8A84B' }}>Gestión</span>
         </div>
-        <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none' }}>
-          <li><Link href="#valuador" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Valuador</Link></li>
-          <li><Link href="/inventario" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Inventario</Link></li>
-          <li><Link href="#panel" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Vendedores</Link></li>
-        </ul>
-        <Link href="/inventario/cargar" style={{
-          fontSize: '0.75rem',
-          fontWeight: '500',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          padding: '0.55rem 1.25rem',
-          border: '0.5px solid #C8A84B',
-          color: '#C8A84B',
-          background: 'transparent',
-          cursor: 'pointer',
-          textDecoration: 'none',
-          transition: 'all 0.2s',
-          display: 'inline-block'
-        }}>
-          Publicar mi auto
-        </Link>
-        <Link href="/auth" style={{
-          fontSize: '0.75rem',
-          fontWeight: '500',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          padding: '0.55rem 1.25rem',
-          border: '0.5px solid rgba(245,240,232,0.3)',
-          color: '#F5F0E8',
-          background: 'transparent',
-          cursor: 'pointer',
-          textDecoration: 'none',
-          transition: 'all 0.2s',
-          display: 'inline-block',
-          marginLeft: '0.5rem'
-        }}>
-          Ingresar / Registrarse
-        </Link>
+
+        {/* Desktop Menu */}
+        {!isMobile && (
+          <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none', marginLeft: '2rem', marginRight: 'auto' }}>
+            <li><Link href="#valuador" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Valuador</Link></li>
+            <li><Link href="/inventario" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Inventario</Link></li>
+            <li><Link href="#panel" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Vendedores</Link></li>
+          </ul>
+        )}
+
+        {/* Mobile Menu Button */}
+        {isMobile && (
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#C8A84B',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              display: 'flex',
+              gap: '0.3rem',
+              flexDirection: 'column'
+            }}
+          >
+            <span style={{ width: '1.25rem', height: '0.15rem', background: '#C8A84B', display: 'block' }}></span>
+            <span style={{ width: '1.25rem', height: '0.15rem', background: '#C8A84B', display: 'block' }}></span>
+            <span style={{ width: '1.25rem', height: '0.15rem', background: '#C8A84B', display: 'block' }}></span>
+          </button>
+        )}
+
+        {/* Desktop Buttons */}
+        {!isMobile && (
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <Link href="/inventario/cargar" style={{
+              fontSize: '0.75rem',
+              fontWeight: '500',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: '0.55rem 1.25rem',
+              border: '0.5px solid #C8A84B',
+              color: '#C8A84B',
+              background: 'transparent',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+              display: 'inline-block',
+              whiteSpace: 'nowrap'
+            }}>
+              Publicar
+            </Link>
+            <Link href="/auth" style={{
+              fontSize: '0.75rem',
+              fontWeight: '500',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: '0.55rem 1.25rem',
+              border: '0.5px solid rgba(245,240,232,0.3)',
+              color: '#F5F0E8',
+              background: 'transparent',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+              display: 'inline-block',
+              whiteSpace: 'nowrap'
+            }}>
+              Ingresar
+            </Link>
+          </div>
+        )}
       </nav>
+
+      {/* Mobile Menu */}
+      {isMobile && mobileMenuOpen && (
+        <div style={{
+          background: '#1A1A16',
+          borderBottom: '0.5px solid rgba(200, 168, 75, 0.2)',
+          padding: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          <Link href="#valuador" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Valuador</Link>
+          <Link href="/inventario" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Inventario</Link>
+          <Link href="#panel" style={{ color: '#6B6B5E', textDecoration: 'none', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Vendedores</Link>
+          <hr style={{ borderColor: 'rgba(200, 168, 75, 0.15)', marginTop: '0.5rem', marginBottom: '0.5rem' }} />
+          <Link href="/inventario/cargar" style={{
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            padding: '0.75rem',
+            border: '0.5px solid #C8A84B',
+            color: '#C8A84B',
+            background: 'transparent',
+            cursor: 'pointer',
+            textDecoration: 'none',
+            transition: 'all 0.2s',
+            display: 'block',
+            textAlign: 'center'
+          }}>
+            Publicar mi auto
+          </Link>
+          <Link href="/auth" style={{
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            padding: '0.75rem',
+            border: '0.5px solid rgba(245,240,232,0.3)',
+            color: '#F5F0E8',
+            background: 'transparent',
+            cursor: 'pointer',
+            textDecoration: 'none',
+            transition: 'all 0.2s',
+            display: 'block',
+            textAlign: 'center'
+          }}>
+            Ingresar / Registrarse
+          </Link>
+        </div>
+      )}
 
       {/* Hero */}
       <section style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        minHeight: '88vh',
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+        minHeight: isMobile ? 'auto' : '88vh',
         padding: 0
       }}>
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          padding: '5rem 3rem 5rem 2.5rem',
-          borderRight: '0.5px solid rgba(200,168,75,0.15)'
+          padding: isMobile ? '2rem 1.5rem' : '5rem 3rem 5rem 2.5rem',
+          borderRight: isMobile ? 'none' : '0.5px solid rgba(200,168,75,0.15)',
+          borderBottom: isMobile ? '0.5px solid rgba(200,168,75,0.15)' : 'none'
         }}>
           <div style={{ fontSize: '0.7rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C8A84B', fontWeight: '500', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <span style={{ display: 'inline-block', width: '2rem', height: '0.5px', background: '#C8A84B' }}></span>
             Intermediación premium · Rosario
           </div>
-          <h1 style={{ fontSize: 'clamp(2.8rem, 5vw, 4rem)', fontWeight: '800', lineHeight: '1.05', marginBottom: '1.5rem', color: '#F5F0E8' }}>
+          <h1 style={{ fontSize: isMobile ? 'clamp(1.8rem, 6vw, 2.5rem)' : 'clamp(2.8rem, 5vw, 4rem)', fontWeight: '800', lineHeight: '1.05', marginBottom: '1.5rem', color: '#F5F0E8' }}>
             Tu auto vale<br />más de lo que<br /><span style={{ color: '#C8A84B' }}>te ofrecieron.</span>
           </h1>
-          <p style={{ fontSize: '1rem', lineHeight: '1.7', color: '#6B6B5E', maxWidth: '36ch', marginBottom: '2.5rem', fontWeight: '300' }}>
+          <p style={{ fontSize: isMobile ? '0.95rem' : '1rem', lineHeight: '1.7', color: '#6B6B5E', maxWidth: '36ch', marginBottom: '2.5rem', fontWeight: '300' }}>
             Sin precios de ojo. Sin regateo. Gestionamos la venta de tu vehículo con datos reales, transparencia total y seguimiento en tiempo real.
           </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: isMobile ? '0.75rem' : '1rem', flexWrap: 'wrap', flexDirection: isMobile ? 'column' : 'row' }}>
             <Link href="/valuador" style={{
-              padding: '0.8rem 1.75rem',
+              padding: isMobile ? '1rem' : '0.8rem 1.75rem',
               background: '#C8A84B',
               color: '#0D0D0B',
               fontWeight: '500',
-              fontSize: '0.82rem',
+              fontSize: isMobile ? '0.85rem' : '0.82rem',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               border: 'none',
               cursor: 'pointer',
               textDecoration: 'none',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              display: 'block',
+              textAlign: 'center'
             }}>
               Valuar mi auto gratis
             </Link>
             <Link href="/inventario" style={{
-              padding: '0.8rem 1.75rem',
+              padding: isMobile ? '1rem' : '0.8rem 1.75rem',
               background: 'transparent',
               color: '#F5F0E8',
               fontWeight: '400',
-              fontSize: '0.82rem',
+              fontSize: isMobile ? '0.85rem' : '0.82rem',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               border: '0.5px solid rgba(245,240,232,0.3)',
               cursor: 'pointer',
               textDecoration: 'none',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              display: 'block',
+              textAlign: 'center'
             }}>
               Ver inventario
             </Link>
           </div>
         </div>
 
+        {!isMobile && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            padding: '2.5rem',
+            background: '#1A1A16',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-1rem',
+              right: '-1rem',
+              fontSize: '12rem',
+              fontWeight: '800',
+              color: 'rgba(200,168,75,0.04)',
+              letterSpacing: '-0.05em',
+              pointerEvents: 'none'
+            }}>
+              AUTO
+            </div>
+            <p style={{ fontSize: '0.9rem', color: '#6B6B5E', fontWeight: '300' }}>
+              <strong style={{ color: '#F5F0E8' }}>✅ Sistema totalmente funcional</strong><br />
+              Valuador inteligente · Carga de vehículos · Base de datos conectada
+            </p>
+          </div>
+        )}
+      </section>
+
+      {isMobile && (
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'flex-end',
-          padding: '2.5rem',
+          padding: '2rem 1.5rem',
           background: '#1A1A16',
-          position: 'relative',
-          overflow: 'hidden'
+          borderTop: '0.5px solid rgba(200,168,75,0.15)'
         }}>
-          <div style={{
-            position: 'absolute',
-            top: '-1rem',
-            right: '-1rem',
-            fontSize: '12rem',
-            fontWeight: '800',
-            color: 'rgba(200,168,75,0.04)',
-            letterSpacing: '-0.05em',
-            pointerEvents: 'none'
-          }}>
-            AUTO
-          </div>
           <p style={{ fontSize: '0.9rem', color: '#6B6B5E', fontWeight: '300' }}>
             <strong style={{ color: '#F5F0E8' }}>✅ Sistema totalmente funcional</strong><br />
             Valuador inteligente · Carga de vehículos · Base de datos conectada
           </p>
         </div>
-      </section>
+      )}
 
       {/* Footer */}
       <footer style={{
         borderTop: '0.5px solid rgba(200,168,75,0.15)',
-        padding: '3rem 2.5rem',
+        padding: isMobile ? '2rem 1.5rem' : '3rem 2.5rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: '#0D0D0B'
+        background: '#0D0D0B',
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? '1.5rem' : '0',
+        flexWrap: isMobile ? 'wrap' : 'nowrap',
+        textAlign: isMobile ? 'center' : 'left'
       }}>
         <div>
           <div style={{ fontWeight: '800', fontSize: '0.9rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
@@ -171,7 +289,7 @@ export default function Home() {
           </div>
           <p style={{ fontSize: '0.75rem', color: '#6B6B5E', marginTop: '0.4rem' }}>Rosario, Santa Fe · Argentina</p>
         </div>
-        <div style={{ display: 'flex', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: isMobile ? 'center' : 'flex-start', width: isMobile ? '100%' : 'auto' }}>
           <Link href="/valuador" style={{ fontSize: '0.72rem', color: '#6B6B5E', textDecoration: 'none', letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'color 0.2s' }}>
             Valuador
           </Link>
@@ -182,7 +300,7 @@ export default function Home() {
             Cargar auto
           </Link>
         </div>
-        <p style={{ fontSize: '0.75rem', color: '#6B6B5E' }}>© 2026 AutoGestión · Todos los derechos reservados</p>
+        <p style={{ fontSize: '0.75rem', color: '#6B6B5E', width: isMobile ? '100%' : 'auto' }}>© 2026 AutoGestión · Todos los derechos reservados</p>
       </footer>
     </div>
   )
